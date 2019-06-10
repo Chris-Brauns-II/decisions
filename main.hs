@@ -1,10 +1,12 @@
+{-# LANGUAGE TupleSections #-}
+
 import Control.Monad
 import Data.List
 
 main :: IO [()]
 main = do
-    results <- forM optionsList (\tuple -> do
-      putStrLn $ stringTupleToString tuple
+    results <- forM (iterations testList) (\tuple -> do
+      putStrLn $ showCompareText tuple
       input <- getLine
       return $ eventFromInput input tuple)
     mapM (print . name) $ sortBy (flip compare) $ eventsToRankables results []
@@ -60,20 +62,12 @@ incrementWins x = Rankable { name = name x, wins = wins x + 1, losses = losses x
 incrementLosses :: Rankable -> Rankable
 incrementLosses x = Rankable { name = name x, wins = wins x, losses = losses x + 1 }
 
-stringTupleToString :: (String, String) -> String
-stringTupleToString (x, y) = "Compare:\n  1: " ++ x ++ "\n  2: " ++ y ++ "\n"
+showCompareText :: (String, String) -> String
+showCompareText (x, y) = "Compare:\n  1: " ++ x ++ "\n  2: " ++ y ++ "\n"
 
-commutativelyEqual :: (Eq a) => (a, a) -> (a, a) -> Bool
-commutativelyEqual a (x, y) = a == (x, y) || a == (y, x)
-
-removeDuplicates :: (Eq a) => [(a, a)] -> [(a, a)]
-removeDuplicates [] = []
-removeDuplicates (x:xs) | any (commutativelyEqual x) xs = removeDuplicates xs
-                        | otherwise = x : removeDuplicates xs
-
-optionsList :: [(String, String)]
-optionsList = removeDuplicates [(x, y) | x <- testList, y <- testList, y /= x]
+iterations :: [a] -> [(a, a)]
+iterations [] = []
+iterations (x:xs) = map (x,) xs ++ iterations xs
 
 testList :: [String]
--- testList = ["dog", "Nintendo Switch", "Meredith Workout Gear", "Chris Sneakers", "Blender", "Bedroom Stuff"]
-testList = ["Dog", "Nintendo Switch", "Bedroom Stuff"]
+testList = ["Dog", "Nintendo Switch", "Meredith Sneakers", "Christopher Sneakers", "Bedroom Stuff"]
